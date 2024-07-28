@@ -1,0 +1,57 @@
+Here is the complete implementation code:
+# Install necessary libraries
+install.packages(c("caret", "e1071", "randomForest", "rpart", "class"))
+# Load libraries
+library(caret)
+library(e1071)
+library(randomForest)
+library(rpart)
+library(class)
+# Load dataset
+wine_data <- read.csv("winequality-red.csv", sep=";")
+# Convert quality to a binary classification problem
+wine_data$quality <- ifelse(wine_data$quality >= 6, "Good", "Bad")
+# Convert the target variable to factor
+wine_data$quality <- as.factor(wine_data$quality)
+# Split the data into training and testing sets
+set.seed(123)
+trainIndex <- createDataPartition(wine_data$quality, p=0.7, list=FALSE)
+wine_train <- wine_data[trainIndex,]
+wine_test <- wine_data[-trainIndex,]
+# Separate features and target variable for training and testing sets
+x_train <- wine_train[, -ncol(wine_train)]
+y_train <- wine_train$quality
+x_test <- wine_test[, -ncol(wine_test)]
+y_test <- wine_test$quality
+# Logistic Regression
+log_model <- glm(quality ~ ., data=wine_train, family=binomial)
+log_pred <- predict(log_model, newdata=wine_test, type="response")
+log_pred_class <- ifelse(log_pred > 0.5, "Good", "Bad")
+log_accuracy <- mean(log_pred_class == y_test)
+print(paste("Logistic Regression Accuracy:", log_accuracy))
+# Decision Tree
+dt_model <- rpart(quality ~ ., data=wine_train, method="class")
+dt_pred <- predict(dt_model, newdata=wine_test, type="class")
+dt_accuracy <- mean(dt_pred == y_test)
+print(paste("Decision Tree Accuracy:", dt_accuracy))
+# Random Forest
+rf_model <- randomForest(quality ~ ., data=wine_train)
+rf_pred <- predict(rf_model, newdata=wine_test)
+rf_accuracy <- mean(rf_pred == y_test)
+print(paste("Random Forest Accuracy:", rf_accuracy))
+# k-Nearest Neighbors
+knn_pred <- knn(train=x_train, test=x_test, cl=y_train, k=5)
+knn_accuracy <- mean(knn_pred == y_test)
+print(paste("k-Nearest Neighbors Accuracy:", knn_accuracy))
+# Support Vector Machine
+svm_model <- svm(quality ~ ., data=wine_train, kernel="linear", probability=TRUE)
+svm_pred <- predict(svm_model, newdata=wine_test)
+svm_accuracy <- mean(svm_pred == y_test)
+print(paste("Support Vector Machine Accuracy:", svm_accuracy))
+# Print model accuracies
+cat("Model Accuracies:\n")
+cat("Logistic Regression:", log_accuracy, "\n")
+cat("Decision Tree:", dt_accuracy, "\n")
+cat("Random Forest:", rf_accuracy, "\n")
+cat("k-Nearest Neighbors:", knn_accuracy, "\n")
+cat("Support Vector Machine:", svm_accuracy, "\n")
